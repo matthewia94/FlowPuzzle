@@ -201,7 +201,6 @@ std::istream& operator>>(std::istream& is, Puzzle& p)
 bool Puzzle::isSolved() const
 {
     bool solved = true;
-    int endx = 0, endy = 0;
     char startChar;
 
     //Check to make sure flow is complete
@@ -211,25 +210,17 @@ bool Puzzle::isSolved() const
             solved = false;
     }
 
-    //Check to make sure board is filled
-    for(int i=0; i < m_height; i++)
-    {
-        for(int j=0; j < m_width; j++)
-        {
-            if(m_board[i][j] == 'e')
-                solved = false;
-        }
-    }
-
     return solved;
 }
 
-bool Puzzle::isValid(int x, int y)
+bool Puzzle::isValid(int x, int y, int id)
 {
     bool valid = false;
     if(y < m_height && x < m_width && x >= 0 && y >= 0)
     {
         if(m_board[y][x] == 'e')
+            valid = true;
+        else if(m_flows[id].m_goalx == x && m_flows[id].m_goaly == y)
             valid = true;
     }
     return valid;
@@ -238,12 +229,11 @@ bool Puzzle::isValid(int x, int y)
 bool Puzzle::move(int dir, int x, int y, int id)
 {
     bool success = false;
-    int endx, endy, tempx, tempy;
     switch(dir)
     {
         case 0:
             //up
-            if(isValid(x, y - 1))
+            if(isValid(x, y - 1, id))
             {
                 m_board[y-1][x] = 'v';
                 m_flows[id].m_endy = y-1;
@@ -252,7 +242,7 @@ bool Puzzle::move(int dir, int x, int y, int id)
             break;
         case 1:
             //right
-            if(isValid(x + 1, y))
+            if(isValid(x + 1, y, id))
             {
                 m_board[y][x+1] = '<';
                 m_flows[id].m_endx = x+1;
@@ -261,7 +251,7 @@ bool Puzzle::move(int dir, int x, int y, int id)
             break;
         case 2:
             //down
-            if(isValid(x, y + 1))
+            if(isValid(x, y + 1, id))
             {
                 m_board[y+1][x] = '^';
                 m_flows[id].m_endy = y+1;
@@ -270,7 +260,7 @@ bool Puzzle::move(int dir, int x, int y, int id)
             break;
         case 3:
             //left
-            if(isValid(x - 1, y))
+            if(isValid(x - 1, y, id))
             {
                 m_board[y][x-1] = '>';
                 m_flows[id].m_endx = x-1;
@@ -281,6 +271,45 @@ bool Puzzle::move(int dir, int x, int y, int id)
     return success;
 }
 
+Puzzle Puzzle::solveBFTS()
+{
+    std::vector<Puzzle> parents;
+    std::queue<Puzzle> frontier;
+    std::stack<Puzzle> path;
+    Puzzle temp;
+    frontier.push(*this);
 
+    while(!frontier.front().isSolved())
+    {
+        parents.push_back(frontier.front());
+        for (int i = 0; i < m_numFlows; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                temp = frontier.front();
+                if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
+                    temp.m_move.m_flowID = i;
+                    temp.m_move.m_destx = temp.m_flows[i].m_endx;
+                    temp.m_move.m_desty = temp.m_flows[i].m_endy;
+                    temp.m_move.m_parent = parents.size() - 1;
+                    frontier.push(temp);
+                }
+            }
 
+        }
+        frontier.pop();
+    }
+
+    std::cout << "a" << std::endl;
+
+    temp = frontier.front();
+    path.push(temp);
+    while(temp.m_move.m_parent != -1)
+    {
+        temp = parents.at(temp.m_move.m_parent);
+        path.push(temp);
+    }
+
+    return frontier.front();
+}
 

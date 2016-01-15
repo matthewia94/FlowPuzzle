@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     Puzzle p(height, width, flows);
     puzzle_file >> p;
 
-    p.move(1, 0, 0, 1);
+    p = p.solveBFTS();
 
     std::cout << p << std::endl;
 

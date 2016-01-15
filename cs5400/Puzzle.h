@@ -58,7 +58,7 @@ public:
     friend std::istream& operator>>(std::istream& is, Puzzle& p);
 
     bool isSolved() const;
-    bool isValid(int x, int y);
+    bool isValid(int x, int y, int id);
     bool move(int dir, int x, int y, int id);
 
     //Solving methods
