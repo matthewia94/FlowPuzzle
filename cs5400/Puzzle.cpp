@@ -207,16 +207,6 @@ bool Puzzle::isSolved() const
     //Check to make sure flow is complete
     for(int i=0; i < m_numFlows; i++)
     {
-        //Check that any move has been made
-//        startChar = m_board[m_flows[i].m_starty][m_flows[i].m_startx];
-//        if(startChar != 'U' && startChar != 'D' && startChar != 'L' && startChar != 'R')
-//            solved = false;
-//        else
-//        {
-//            findEnd(m_flows[i].m_startx, m_flows[i].m_starty, endx, endy);
-//            if (endx != m_flows[i].m_goalx || endy != m_flows[i].m_goaly)
-//                solved = false;
-//        }
         if(m_flows[i].m_endx != m_flows[i].m_goalx || m_flows[i].m_endy != m_flows[i].m_goaly)
             solved = false;
     }
