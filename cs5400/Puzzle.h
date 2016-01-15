@@ -42,8 +42,6 @@ private:
     Flow* m_flows;
     void findEnd(int startX, int startY, int& x, int& y) const;
     void nextPiece(int& x, int& y) const;
-    //int findID(int m_startx, int m_starty);
-    //void nextPiece(int& x, int& y);
 
 public:
     //Constructors/Destructors
@@ -63,6 +61,8 @@ public:
 
     //Solving methods
     Puzzle solveBFTS();
+    bool solveDLTS(int limit, std::vector<Move>& parents);
+    void solveIDDLTS();
 };
 
 #endif //CS5400_PUZZLE_H

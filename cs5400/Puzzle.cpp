@@ -313,3 +313,67 @@ Puzzle Puzzle::solveBFTS()
     return frontier.front();
 }
 
+bool Puzzle::solveDLTS(int limit, std::vector<Move>& parents)
+{
+    std::stack<Puzzle> frontier;
+    Puzzle tempEval, temp;
+    frontier.push(*this);
+    bool goal = false;
+    Move m;
+
+    while(!frontier.empty() && !frontier.top().isSolved())
+    {
+        parents.push_back(frontier.top().m_move);
+        tempEval = frontier.top();
+        frontier.pop();
+        if(tempEval.m_move.m_depth < limit)
+        {
+            for(int i=0; i < m_numFlows; i++)
+            {
+                //test each direction
+                for(int j=0; j < 4; j++) {
+                    temp = tempEval;
+                    if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i))
+                    {
+                        temp.m_move.m_flowID = i;
+                        temp.m_move.m_destx = temp.m_flows[i].m_endx;
+                        temp.m_move.m_desty = temp.m_flows[i].m_endy;
+                        temp.m_move.m_depth++;
+                        temp.m_move.m_parent = parents.size() - 1;
+                        frontier.push(temp);
+                    }
+                }
+            }
+        }
+    }
+
+    if(!frontier.empty() && frontier.top().isSolved())
+    {
+        goal = true;
+        m.m_depth = frontier.top().m_move.m_depth;
+        m.m_flowID = frontier.top().m_move.m_flowID;
+        m.m_destx = frontier.top().m_move.m_destx;
+        m.m_desty = frontier.top().m_move.m_desty;
+        m.m_parent = frontier.top().m_move.m_parent;
+        parents.push_back(m);
+        *this = frontier.top();
+    }
+
+    return goal;
+}
+
+void Puzzle::solveIDDLTS()
+{
+    int depth = 0;
+    std::vector<Move> parents;
+    std::stack<Move> path;
+    Move temp;
+    int steps = 0;
+
+    while(!solveDLTS(depth, parents))
+    {
+        depth++;
+        std::cout << depth << std::endl;
+        parents.clear();
+    }
+}
