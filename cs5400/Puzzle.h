@@ -9,6 +9,7 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <algorithm>
 
 class Puzzle
 {
@@ -40,7 +41,8 @@ private:
     int m_numFlows;
     Move m_move;
     Flow* m_flows;
-    void findEnd(int startX, int startY, int& x, int& y) const;
+    int m_cost;
+    void findEnd(int startX, int startY, int& x, int& y, int i) const;
     void nextPiece(int& x, int& y) const;
 
 public:
@@ -58,11 +60,15 @@ public:
     bool isSolved() const;
     bool isValid(int x, int y, int id);
     bool move(int dir, int x, int y, int id);
+    bool comparePuzzlesUCTS(Puzzle p1, Puzzle p2);
+ 
+    int getCost();
 
     //Solving methods
     Puzzle solveBFTS();
     bool solveDLTS(int limit, std::vector<Move>& parents);
     void solveIDDLTS();
+    Puzzle solveUCTS();
 };
 
 #endif //CS5400_PUZZLE_H

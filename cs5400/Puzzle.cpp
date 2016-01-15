@@ -4,15 +4,20 @@
 
 #include "Puzzle.h"
 
-void Puzzle::findEnd(int startX, int startY, int& x, int& y) const
+void Puzzle::findEnd(int startX, int startY, int& x, int& y, int i) const
 {
     int tempX = startX, tempY = startY;
-
+    int length = 0;
     //trace the pipe
     do
     {
         x = tempX;
         y = tempY;
+        if(tempX == m_flows[i].m_goalx && tempY == m_flows[i].m_goaly)
+        {
+            break;
+        }
+            std::cout<<x<<","<<y<<std::endl;
         nextPiece(tempX, tempY);
     }while(m_board[tempY][tempX] == 'v' || m_board[tempY][tempX] == '<' || m_board[tempY][tempX] == '>' ||
             m_board[tempY][tempX] == '^');
@@ -376,4 +381,66 @@ void Puzzle::solveIDDLTS()
         std::cout << depth << std::endl;
         parents.clear();
     }
+}
+
+int Puzzle::getCost()
+{
+    int cost = 0;
+    for(int k = 0; k < m_height; k++)
+    {
+        for(int j = 0; j < m_width; j++)
+        {
+            if(m_board[j][k] == 'v' || m_board[j][k] == '<' || m_board[j][k] == '>' || m_board[j][k] == '^')
+            {
+                cost++;
+            }
+        }
+    }
+    return cost;
+}
+
+
+Puzzle Puzzle::solveUCTS()
+{
+    std::vector<Puzzle> parents;
+    std::queue<Puzzle> frontier;
+    std::stack<Puzzle> path;
+    Puzzle temp;
+    frontier.push(*this);
+
+    while(!frontier.front().isSolved())
+    {
+        parents.push_back(frontier.front());
+        for (int i = 0; i < m_numFlows; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                temp = frontier.front();
+                std::cout<<"-------------------------------------------"<<std::endl;
+                std::cout<<temp<<std::endl;                
+                if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
+                    temp.m_move.m_flowID = i;
+                    temp.m_move.m_destx = temp.m_flows[i].m_endx;
+                    temp.m_move.m_desty = temp.m_flows[i].m_endy;
+                    temp.m_move.m_parent = parents.size() - 1;
+                    temp.m_cost = temp.getCost();
+                    frontier.push(temp);
+                }
+            }
+
+        }
+        frontier.pop();
+    }
+
+    std::cout << "a" << std::endl;
+
+    temp = frontier.front();
+    path.push(temp);
+    while(temp.m_move.m_parent != -1)
+    {
+        temp = parents.at(temp.m_move.m_parent);
+        path.push(temp);
+    }
+
+    return frontier.front();  
 }

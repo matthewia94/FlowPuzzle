@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     // Open puzzle file
     std::ifstream puzzle_file;
     if(argc == 1)
-        puzzle_file.open("/home/matt/Documents/school/cs5400/puzzles/test.dat");
+        puzzle_file.open("puzzles/test.dat");
     else
         puzzle_file.open(argv[1]);
 
@@ -22,7 +22,8 @@ int main(int argc, char** argv)
     puzzle_file >> p;
 
     p.solveIDDLTS();
-
+    // p.solveBFTS();
+    // p.solveUCTS();
     std::cout << p << std::endl;
 
     //Clean up
