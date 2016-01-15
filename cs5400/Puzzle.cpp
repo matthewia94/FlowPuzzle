@@ -98,7 +98,7 @@ Puzzle::Puzzle(const Puzzle& rhs)
     m_height = rhs.m_height;
     m_width = rhs.m_width;
     m_numFlows = rhs.m_numFlows;
-
+    m_cost = rhs.m_cost;
     m_move = rhs.m_move;
 
     m_flows = new Flow[m_numFlows];
@@ -128,7 +128,7 @@ Puzzle& Puzzle::operator=(const Puzzle& rhs)
     m_height = rhs.m_height;
     m_width = rhs.m_width;
     m_numFlows = rhs.m_numFlows;
-
+    m_cost = rhs.m_cost;
     m_move = rhs.m_move;
 
     m_flows = new Flow[m_numFlows];
@@ -399,14 +399,28 @@ int Puzzle::getCost()
     return cost;
 }
 
-
+void Puzzle::getSmallestCost(std::vector<Puzzle>& frontier)
+{
+    int smallest_value = 30000;
+    std::vector<Puzzle>::iterator smallest;
+    for(std::vector<Puzzle>::iterator it = frontier.begin(); it != frontier.end(); it++)
+    {
+        if(it->m_cost < smallest_value)
+        {
+            smallest_value = it->m_cost;
+            smallest = it;
+        }
+    }
+    std::iter_swap(frontier.begin(),smallest);
+    return;
+}
 Puzzle Puzzle::solveUCTS()
 {
     std::vector<Puzzle> parents;
-    std::queue<Puzzle> frontier;
+    std::vector<Puzzle> frontier;
     std::stack<Puzzle> path;
     Puzzle temp;
-    frontier.push(*this);
+    frontier.push_back(*this);
 
     while(!frontier.front().isSolved())
     {
@@ -415,6 +429,7 @@ Puzzle Puzzle::solveUCTS()
         {
             for (int j = 0; j < 4; j++)
             {
+                getSmallestCost(frontier);
                 temp = frontier.front();
                 // std::cout<<"-------------------------------------------"<<std::endl;
                 // std::cout<<temp<<std::endl;                
@@ -424,12 +439,12 @@ Puzzle Puzzle::solveUCTS()
                     temp.m_move.m_desty = temp.m_flows[i].m_endy;
                     temp.m_move.m_parent = parents.size() - 1;
                     temp.m_cost = temp.getCost();
-                    frontier.push(temp);
+                    frontier.push_back(temp);
                 }
             }
 
         }
-        frontier.pop();
+        frontier.erase(frontier.begin());
     }
 
     std::cout << "a" << std::endl;
@@ -443,4 +458,150 @@ Puzzle Puzzle::solveUCTS()
     }
 
     return frontier.front();  
+}
+
+int Puzzle::getASTSCost()
+{
+    int cost = 0;
+    for(int k = 0; k < m_height; k++)
+    {
+        for(int j = 0; j < m_width; j++)
+        {
+            if(m_board[j][k] == 'v' || m_board[j][k] == '<' || m_board[j][k] == '>' || m_board[j][k] == '^')
+            {
+                cost++;
+            }
+        }
+    }
+    for(int k = 0; k < m_numFlows; k++)
+    {
+
+        cost += (abs(m_flows[k].m_goalx  - m_flows[k].m_endx) + abs(m_flows[k].m_goaly  - m_flows[k].m_endy));
+    }
+    return cost;
+}
+
+Puzzle Puzzle::solveASTS()
+{
+    std::vector<Puzzle> parents;
+    std::vector<Puzzle> frontier;
+    std::stack<Puzzle> path;
+    Puzzle temp;
+    frontier.push_back(*this);
+
+    while(!frontier.front().isSolved())
+    {
+        parents.push_back(frontier.front());
+        for (int i = 0; i < m_numFlows; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                getSmallestCost(frontier);
+                temp = frontier.front();
+                // std::cout<<"-------------------------------------------"<<std::endl;
+                // std::cout<<temp<<std::endl;                
+                if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
+                    temp.m_move.m_flowID = i;
+                    temp.m_move.m_destx = temp.m_flows[i].m_endx;
+                    temp.m_move.m_desty = temp.m_flows[i].m_endy;
+                    temp.m_move.m_parent = parents.size() - 1;
+                    temp.m_cost = temp.getASTSCost();
+                    frontier.push_back(temp);
+                }
+            }
+
+        }
+        frontier.erase(frontier.begin());
+    }
+
+    std::cout << "a" << std::endl;
+
+    temp = frontier.front();
+    path.push(temp);
+    while(temp.m_move.m_parent != -1)
+    {
+        temp = parents.at(temp.m_move.m_parent);
+        path.push(temp);
+    }
+
+    return frontier.front();    
+}
+
+bool Puzzle::alreadyVisited(std::vector<Puzzle>& visited, Puzzle temp)
+{
+    if(visited.size() == 0)
+    {
+        return false;
+    }
+    for(std::vector<Puzzle>::iterator it = visited.begin(); it != visited.end(); it++)
+    {
+        bool different = false;
+        for(int k = 0; k < m_height; k++)
+        {
+            for(int j = 0; j < m_width; j++)
+            {
+                if(temp.m_board[j][k] != it->m_board[j][k])
+                {
+                    different = true;
+                    k = m_height;
+                    j = m_width;
+                }
+            }
+        }
+        if(!different)
+        {
+            return true;
+        }        
+    }
+    return false;
+}
+Puzzle Puzzle::solveASGS()
+{
+    std::vector<Puzzle> visited;
+    std::vector<Puzzle> parents;
+    std::vector<Puzzle> frontier;
+    std::stack<Puzzle> path;
+    Puzzle temp;
+    frontier.push_back(*this);
+
+    while(!frontier.front().isSolved())
+    {
+        parents.push_back(frontier.front());
+        for (int i = 0; i < m_numFlows; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                getSmallestCost(frontier);
+                temp = frontier.front();               
+                if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
+                    temp.m_move.m_flowID = i;
+                    temp.m_move.m_destx = temp.m_flows[i].m_endx;
+                    temp.m_move.m_desty = temp.m_flows[i].m_endy;
+                    temp.m_move.m_parent = parents.size() - 1;
+                    temp.m_cost = temp.getASTSCost();
+                    // std::cout<<"-------------------------------------------"<<std::endl;
+                    // std::cout<<temp<<std::endl;                     
+                    if(!alreadyVisited(visited, temp))
+                    {
+                        frontier.push_back(temp);
+                        visited.push_back(temp);
+                    }
+                }
+            }
+
+        }
+        frontier.erase(frontier.begin());
+    }
+
+    std::cout << "a" << std::endl;
+
+    temp = frontier.front();
+    path.push(temp);
+    while(temp.m_move.m_parent != -1)
+    {
+        temp = parents.at(temp.m_move.m_parent);
+        path.push(temp);
+    }
+
+    return frontier.front();    
 }

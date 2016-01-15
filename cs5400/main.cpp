@@ -21,9 +21,11 @@ int main(int argc, char** argv)
     Puzzle p(height, width, flows);
     puzzle_file >> p;
 
-    p.solveIDDLTS();
-    // p.solveBFTS();
+    // p.solveIDDLTS();
+    p.solveBFTS();
     // p.solveUCTS();
+    // p.solveASTS();
+    // p.solveASGS();
     std::cout << p << std::endl;
 
     //Clean up

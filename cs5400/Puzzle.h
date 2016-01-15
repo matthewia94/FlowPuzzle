@@ -10,6 +10,8 @@
 #include <queue>
 #include <stack>
 #include <algorithm>
+#include <cmath>
+#include <set>
 
 class Puzzle
 {
@@ -63,12 +65,18 @@ public:
     bool comparePuzzlesUCTS(Puzzle p1, Puzzle p2);
  
     int getCost();
+    int getASTSCost();
+
+    void getSmallestCost(std::vector<Puzzle>& frontier);
+    bool alreadyVisited(std::vector<Puzzle>& visited, Puzzle temp);
 
     //Solving methods
     Puzzle solveBFTS();
     bool solveDLTS(int limit, std::vector<Move>& parents);
     void solveIDDLTS();
     Puzzle solveUCTS();
+    Puzzle solveASTS();
+    Puzzle solveASGS();
 };
 
 #endif //CS5400_PUZZLE_H
