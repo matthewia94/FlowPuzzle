@@ -416,8 +416,8 @@ Puzzle Puzzle::solveUCTS()
             for (int j = 0; j < 4; j++)
             {
                 temp = frontier.front();
-                std::cout<<"-------------------------------------------"<<std::endl;
-                std::cout<<temp<<std::endl;                
+                // std::cout<<"-------------------------------------------"<<std::endl;
+                // std::cout<<temp<<std::endl;                
                 if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
                     temp.m_move.m_flowID = i;
                     temp.m_move.m_destx = temp.m_flows[i].m_endx;
