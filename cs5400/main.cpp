@@ -22,10 +22,10 @@ int main(int argc, char** argv)
     puzzle_file >> p;
 
     // p.solveIDDLTS();
-    p.solveBFTS();
+    // p.solveBFTS();
     // p.solveUCTS();
     // p.solveASTS();
-    // p.solveASGS();
+    p.solveASGS();
     std::cout << p << std::endl;
 
     //Clean up

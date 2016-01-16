@@ -17,7 +17,7 @@ void Puzzle::findEnd(int startX, int startY, int& x, int& y, int i) const
         {
             break;
         }
-            std::cout<<x<<","<<y<<std::endl;
+            // std::cout<<x<<","<<y<<std::endl;
         nextPiece(tempX, tempY);
     }while(m_board[tempY][tempX] == 'v' || m_board[tempY][tempX] == '<' || m_board[tempY][tempX] == '>' ||
             m_board[tempY][tempX] == '^');
@@ -234,6 +234,10 @@ bool Puzzle::isValid(int x, int y, int id)
 bool Puzzle::move(int dir, int x, int y, int id)
 {
     bool success = false;
+    if(x == m_flows[id].m_goalx && y == m_flows[id].m_goaly)
+    {
+        return false;
+    }
     switch(dir)
     {
         case 0:
@@ -405,12 +409,14 @@ void Puzzle::getSmallestCost(std::vector<Puzzle>& frontier)
     std::vector<Puzzle>::iterator smallest;
     for(std::vector<Puzzle>::iterator it = frontier.begin(); it != frontier.end(); it++)
     {
+        // std::cout<<it->m_cost<<std::endl;
         if(it->m_cost < smallest_value)
         {
             smallest_value = it->m_cost;
             smallest = it;
         }
     }
+    // std::cout<<smallest_value<<std::endl;
     std::iter_swap(frontier.begin(),smallest);
     return;
 }
@@ -475,8 +481,12 @@ int Puzzle::getASTSCost()
     }
     for(int k = 0; k < m_numFlows; k++)
     {
-
-        cost += (abs(m_flows[k].m_goalx  - m_flows[k].m_endx) + abs(m_flows[k].m_goaly  - m_flows[k].m_endy));
+        int heuristic_cost = (abs(m_flows[k].m_goalx - m_flows[k].m_endx) + abs(m_flows[k].m_goaly - m_flows[k].m_endy));
+        // if (heuristic_cost == 0)
+        // {
+        //     heuristic_cost -= 2;
+        // }
+        cost += heuristic_cost;
     }
     return cost;
 }
@@ -491,27 +501,35 @@ Puzzle Puzzle::solveASTS()
 
     while(!frontier.front().isSolved())
     {
+        // std::cout<<"Cost: "<<frontier.front().m_cost<<std::endl;
+        // for(int k = 0; k < frontier.front().m_numFlows; k++)
+        // {
+        //     std::cout<<frontier.front().m_flows[k].m_endx<<","<<frontier.front().m_flows[k].m_endy<<std::endl;
+        //     std::cout<<frontier.front().m_flows[k].m_goalx<<","<<frontier.front().m_flows[k].m_goaly<<std::endl;
+        // }
         parents.push_back(frontier.front());
         for (int i = 0; i < m_numFlows; i++)
         {
             for (int j = 0; j < 4; j++)
             {
-                getSmallestCost(frontier);
-                temp = frontier.front();
+                temp = frontier.front();     
                 // std::cout<<"-------------------------------------------"<<std::endl;
-                // std::cout<<temp<<std::endl;                
+                // std::cout<<temp<<std::endl;                          
                 if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
                     temp.m_move.m_flowID = i;
                     temp.m_move.m_destx = temp.m_flows[i].m_endx;
                     temp.m_move.m_desty = temp.m_flows[i].m_endy;
                     temp.m_move.m_parent = parents.size() - 1;
                     temp.m_cost = temp.getASTSCost();
+                 
                     frontier.push_back(temp);
                 }
             }
 
         }
         frontier.erase(frontier.begin());
+        getSmallestCost(frontier); 
+
     }
 
     std::cout << "a" << std::endl;
@@ -571,7 +589,6 @@ Puzzle Puzzle::solveASGS()
         {
             for (int j = 0; j < 4; j++)
             {
-                getSmallestCost(frontier);
                 temp = frontier.front();               
                 if (temp.move(j, temp.m_flows[i].m_endx, temp.m_flows[i].m_endy, i)) {
                     temp.m_move.m_flowID = i;
@@ -591,6 +608,8 @@ Puzzle Puzzle::solveASGS()
 
         }
         frontier.erase(frontier.begin());
+                getSmallestCost(frontier);
+        
     }
 
     std::cout << "a" << std::endl;
