@@ -44,6 +44,7 @@ private:
     Move m_move;
     Flow* m_flows;
     int m_cost;
+    int m_depth;
     void findEnd(int startX, int startY, int& x, int& y, int i) const;
     void nextPiece(int& x, int& y) const;
 
@@ -77,6 +78,14 @@ public:
     Puzzle solveUCTS();
     Puzzle solveASTS();
     Puzzle solveASGS();
+
+    // bool DLASTS(int maxDepth);    
+    bool solveDLASTS(int limit);
+    void solveIDDLASTS();
+
+    bool solveDLASGS(int limit);
+    void solveIDDLASGS();
+ 
 };
 
 #endif //CS5400_PUZZLE_H
